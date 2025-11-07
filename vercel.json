@@ -7,5 +7,15 @@
   "routes": [
     { "src": "/api/wallets", "dest": "/api/wallets.py" },
     { "src": "/(.*)", "dest": "/public/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/api/wallets",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Expires", "value": "0" }
+      ]
+    }
   ]
 }
