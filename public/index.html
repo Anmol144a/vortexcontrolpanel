@@ -57,7 +57,7 @@
     <div class="stats">
       <div class="stat-card">
         <h3>LTC Price</h3>
-        <div class="value" id="ltc-price">$0.00</div>
+        <div class="value" id="ltc-price">Loading...</div>
       </div>
       <div class="stat-card">
         <h3>Wallets Monitored</h3>
@@ -84,35 +84,37 @@
     </div>
 
     <p class="refresh-info">
-      <span>Auto-scanning every 10 seconds</span>
+      <span>Auto-refresh every 10 seconds</span>
     </p>
   </div>
 
   <div id="notification" class="notification" style="display: none;">
-    <h4>New Receive Detected!</h4>
+    <h4>New Receive!</h4>
     <p id="notif-msg"></p>
   </div>
 
   <script>
     let prevTotal = 0;
+
     async function loadData() {
       try {
-        const res = await fetch('/api/wallets');
+        const res = await fetch('/api/wallets?' + new Date().getTime(), { cache: 'no-store' });
         const data = await res.json();
-        const priceRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=litecoin&vs_currencies=usd');
-        const priceData = await priceRes.json();
-        document.getElementById('ltc-price').textContent = `$${priceData.litecoin?.usd?.toFixed(2) || '0.00'}`;
+
+        document.getElementById('ltc-price').textContent = `$${data.ltc_price?.toFixed(2) || '0.00'}`;
         document.getElementById('wallet-count').textContent = data.count || 0;
         const totalBal = data.total_balance || 0;
         document.getElementById('total-balance').textContent = `${totalBal.toFixed(8)} LTC`;
+
         if (totalBal > prevTotal + 0.00000001) {
           document.getElementById('notif-msg').textContent = `+${(totalBal - prevTotal).toFixed(8)} LTC received!`;
           const notif = document.getElementById('notification');
           notif.style.display = 'block';
           notif.classList.add('show');
-          setTimeout(() => { notif.classList.remove('show'); }, 3000);
+          setTimeout(() => notif.classList.remove('show'), 3000);
         }
         prevTotal = totalBal;
+
         const list = document.getElementById('wallets-list');
         if (!data.wallets || data.wallets.length === 0) {
           list.innerHTML = `<div class="empty-state">No wallets.<br><br>Use Discord: <code>/addwallet &lt;address&gt;</code></div>`;
@@ -125,14 +127,12 @@
           `).join('');
         }
       } catch (err) {
-        console.error(err);
+        console.error('Fetch error:', err);
       }
     }
+
     loadData();
     setInterval(loadData, 10000);
-    setInterval(() => fetch('https://api.coingecko.com/api/v3/simple/price?ids=litecoin&vs_currencies=usd').then(r => r.json()).then(d => {
-      document.getElementById('ltc-price').textContent = `$${d.litecoin?.usd?.toFixed(2) || '0.00'}`;
-    }), 30000);
   </script>
 </body>
 </html>
