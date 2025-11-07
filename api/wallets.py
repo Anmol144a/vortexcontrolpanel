@@ -1,60 +1,58 @@
-# api/wallets.py
 import os
 import json
 import requests
-from supabase import create_client, Client
 
 def handler(event, context):
     try:
-        url = os.environ.get("SUPABASE_URL")
-        key = os.environ.get("SUPABASE_KEY")
+        SUPABASE_URL = os.environ.get("SUPABASE_URL")
+        SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
-        if not url or not key:
-            raise ValueError("Missing SUPABASE_URL or SUPABASE_KEY environment variables.")
+        if not SUPABASE_URL or not SUPABASE_KEY:
+            raise Exception("Missing SUPABASE_URL or SUPABASE_KEY")
 
-        supabase: Client = create_client(url, key)
-
-        res = supabase.table("wallets").select("*").execute()
-        wallets = res.data or []
-
-        total_balance = 0.0
-        for w in wallets:
-            try:
-                total_balance += float(w.get("balance", 0))
-            except (TypeError, ValueError):
-                continue
-
-        try:
-            price_res = requests.get(
-                "https://api.coingecko.com/api/v3/simple/price?ids=litecoin&vs_currencies=usd",
-                timeout=10
-            )
-            price_data = price_res.json()
-            ltc_price = float(price_data.get("litecoin", {}).get("usd", 0)) if price_res.ok else 0.0
-        except Exception:
-            ltc_price = 0.0
-
-        response = {
-            "wallets": [
-                {
-                    "address": w.get("address", "unknown"),
-                    "balance": round(float(w.get("balance", 0)), 8)
-                } for w in wallets
-            ],
-            "count": len(wallets),
-            "total_balance": round(total_balance, 8),
-            "ltc_price": round(ltc_price, 2)
+        # --- Get wallet data from Supabase REST API ---
+        rest_url = f"{SUPABASE_URL}/rest/v1/wallets?select=*"
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json"
         }
 
+        response = requests.get(rest_url, headers=headers, timeout=15)
+        if response.status_code != 200:
+            raise Exception(f"Supabase request failed: {response.text}")
+
+        wallets = response.json()
+
+        # --- Get LTC price from CoinGecko ---
+        price_res = requests.get(
+            "https://api.coingecko.com/api/v3/simple/price?ids=litecoin&vs_currencies=usd",
+            timeout=10
+        )
+        price_data = price_res.json() if price_res.ok else {}
+        ltc_price = float(price_data.get("litecoin", {}).get("usd", 0))
+
+        # --- Calculate total balance ---
+        total = 0.0
+        for w in wallets:
+            try:
+                total += float(w.get("balance", 0))
+            except:
+                pass
+
+        # --- Build final data ---
         return {
             "statusCode": 200,
             "headers": {
                 "Content-Type": "application/json",
-                "Cache-Control": "no-store, max-age=0, must-revalidate",
-                "Pragma": "no-cache",
-                "Expires": "0"
+                "Cache-Control": "no-cache"
             },
-            "body": json.dumps(response)
+            "body": json.dumps({
+                "wallets": [{"address": w["address"], "balance": float(w["balance"])} for w in wallets],
+                "count": len(wallets),
+                "total_balance": round(total, 8),
+                "ltc_price": round(ltc_price, 2)
+            })
         }
 
     except Exception as e:
