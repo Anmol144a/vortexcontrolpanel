@@ -4,127 +4,214 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vortex LTC Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --neon-blue: #00f6ff;
+      --neon-green: #00ff88;
+      --dark-bg: #0a0e1a;
+      --card-bg: rgba(15, 25, 50, 0.7);
+      --border: #00d9ff;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      font-family: 'Orbitron', monospace;
-      background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%);
-      color: #00d9ff;
+      background: linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #0f1b3d 100%);
+      color: var(--neon-blue);
+      font-family: 'Roboto Mono', monospace;
       min-height: 100vh;
-      padding: 20px;
-      position: relative;
       overflow-x: hidden;
+      position: relative;
     }
     body::before {
-      content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.1), transparent 50%),
-                  radial-gradient(circle at 80% 80%, rgba(0, 255, 136, 0.1), transparent 50%);
-      pointer-events: none; z-index: 0;
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(0, 246, 255, 0.15), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0, 255, 136, 0.15), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+      animation: pulse-bg 8s ease-in-out infinite;
     }
-    .container { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
-    .header { text-align: center; margin-bottom: 50px; }
-    .logo img { width: 120px; height: 120px; filter: drop-shadow(0 0 30px #00d9ff); animation: float 3s ease-in-out infinite; }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+    @keyframes pulse-bg {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+
+    /* Header */
+    .header {
+      text-align: center; margin-bottom: 50px; padding-top: 30px;
+    }
+    .logo img {
+      width: 130px; height: 130px;
+      filter: drop-shadow(0 0 40px var(--neon-blue));
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-25px); }
+    }
     h1 {
-      font-size: 3.5em; font-weight: 900; margin-bottom: 10px;
-      background: linear-gradient(45deg, #00d9ff, #00ff88, #00d9ff);
-      background-size: 200%; -webkit-background-clip: text; background-clip: text;
-      -webkit-text-fill-color: transparent; animation: gradientShift 3s ease infinite;
-      text-shadow: 0 0 40px rgba(0,217,255,0.5);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 4rem; font-weight: 900;
+      background: linear-gradient(45deg, var(--neon-blue), var(--neon-green), var(--neon-blue));
+      background-size: 300%; -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 50px rgba(0, 246, 255, 0.6);
+      animation: gradient-shift 4s ease infinite;
     }
-    @keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-    .subtitle { color: #0099cc; font-size: 1.3em; letter-spacing: 3px; text-transform: uppercase; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px; }
+    @keyframes gradient-shift {
+      0%,100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .subtitle {
+      color: #00aaff; font-size: 1.4rem; letter-spacing: 4px; text-transform: uppercase;
+      margin-top: 10px; opacity: 0.9;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;
+    }
     .stat-card {
-      background: rgba(0,20,40,0.6); border: 3px solid #00d9ff; border-radius: 15px; padding: 30px;
-      text-align: center; box-shadow: 0 0 30px rgba(0,217,255,0.4); position: relative; overflow: hidden;
-      transition: all 0.3s ease;
+      background: var(--card-bg); border: 3px solid var(--border); border-radius: 18px;
+      padding: 30px; text-align: center; position: relative; overflow: hidden;
+      backdrop-filter: blur(10px); box-shadow: 0 0 40px rgba(0, 217, 255, 0.3);
+      transition: all 0.4s ease;
     }
     .stat-card::before {
       content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-      background: linear-gradient(45deg, transparent, rgba(0,217,255,0.1), transparent);
-      transform: rotate(45deg); animation: scan 3s linear infinite;
+      background: linear-gradient(45deg, transparent, rgba(0, 217, 255, 0.2), transparent);
+      transform: rotate(45deg); animation: scan 4s linear infinite;
     }
-    @keyframes scan { 0%{transform:translateX(-100%) translateY(-100%) rotate(45deg)} 100%{transform:translateX(100%) translateY(100%) rotate(45deg)} }
-    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 5px 40px rgba(0,217,255,0.6); }
-    .stat-card h3 { font-size: 1em; color: #0099cc; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
-    .stat-card .value { font-size: 2.5em; font-weight: bold; color: #00d9ff; }
+    @keyframes scan {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    .stat-card:hover {
+      transform: translateY(-10px); box-shadow: 0 10px 50px rgba(0, 217, 255, 0.6);
+      border-color: var(--neon-green);
+    }
+    .stat-card h3 {
+      font-size: 1.1rem; color: #00ccff; margin-bottom: 15px; letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .value {
+      font-size: 3rem; font-weight: 900; color: var(--neon-green);
+      text-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
+    }
+
+    /* Wallets */
     .wallets-section {
-      background: rgba(0,20,40,0.6); border: 3px solid #00d9ff; border-radius: 15px; padding: 40px;
-      box-shadow: 0 0 40px rgba(0,217,255,0.4); position: relative; overflow: hidden;
-    }
-    .wallets-section h2 { margin-bottom: 30px; text-align: center; font-size: 2.2em; letter-spacing: 3px; }
-    .wallet-item {
-      background: linear-gradient(135deg, rgba(0,50,100,0.4), rgba(0,100,150,0.2));
-      border: 2px solid #006699; border-radius: 10px; padding: 20px; margin-bottom: 20px;
-      display: flex; justify-content: space-between; align-items: center; transition: all 0.4s ease;
+      background: var(--card-bg); border: 3px solid var(--border); border-radius: 18px;
+      padding: 40px; margin-bottom: 40px; box-shadow: 0 0 50px rgba(0, 217, 255, 0.3);
       position: relative; overflow: hidden;
     }
-    .wallet-item:hover { border-color: #00d9ff; box-shadow: 0 0 25px rgba(0,217,255,0.6); transform: translateX(10px); }
-    .wallet-address { font-size: 1em; word-break: break-all; flex: 1; margin-right: 20px; }
-    .wallet-balance { font-size: 1.5em; font-weight: bold; color: #00ff88; white-space: nowrap; text-shadow: 0 0 10px rgba(0,255,136,0.8); }
-    .empty-state { text-align: center; padding: 60px 20px; color: #0099cc; font-size: 1.2em; }
-    .empty-state code { background: rgba(0,217,255,0.2); padding: 5px 10px; border-radius: 5px; color: #00ff88; border: 1px solid #00d9ff; }
-    .refresh-info { text-align: center; margin-top: 30px; color: #006699; font-size: 1em; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .wallets-section h2 {
+      text-align: center; font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 30px;
+      color: var(--neon-blue); text-shadow: 0 0 30px;
+    }
+    .wallet-item {
+      background: linear-gradient(135deg, rgba(0, 50, 100, 0.5), rgba(0, 100, 150, 0.3));
+      border: 2px solid #0066cc; border-radius: 12px; padding: 20px;
+      margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+      transition: all 0.5s ease; position: relative; overflow: hidden;
+    }
+    .wallet-item::before {
+      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 246, 255, 0.3), transparent);
+      transition: left 0.6s ease;
+    }
+    .wallet-item:hover::before { left: 100%; }
+    .wallet-item:hover {
+      border-color: var(--neon-green); box-shadow: 0 0 30px rgba(0, 255, 136, 0.7);
+      transform: translateX(12px);
+    }
+    .wallet-address {
+      font-family: 'Roboto Mono'; font-size: 1.1rem; color: #00f6ff; word-break: break-all;
+      flex: 1; margin-right: 20px;
+    }
+    .wallet-balance {
+      font-size: 1.8rem; font-weight: bold; color: var(--neon-green);
+      text-shadow: 0 0 15px rgba(0, 255, 136, 0.9); white-space: nowrap;
+    }
+
+    .empty-state {
+      text-align: center; padding: 70px 20px; color: #00aaff; font-size: 1.3rem;
+    }
+    .empty-state code {
+      background: rgba(0, 246, 255, 0.2); padding: 6px 12px; border-radius: 6px;
+      color: var(--neon-green); border: 1px solid var(--border); font-family: 'Roboto Mono';
+    }
+
+    .refresh-info {
+      text-align: center; color: #0066cc; font-size: 1rem; margin-top: 20px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
     .pulse { animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
-    .status-online { color: #00ff88; text-shadow: 0 0 15px rgba(0,255,136,0.8); }
+    @keyframes pulse { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+
     @media (max-width: 768px) {
-      h1 { font-size: 2em; } .subtitle { font-size: 1em; }
-      .wallet-item { flex-direction: column; text-align: center; } .wallet-address { margin-right: 0; }
+      h1 { font-size: 2.5rem; }
+      .wallet-item { flex-direction: column; text-align: center; }
+      .wallet-address { margin-right: 0; margin-bottom: 10px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Header -->
     <div class="header">
       <div class="logo">
         <img src="https://cryptologos.cc/logos/litecoin-ltc-logo.png" alt="LTC">
       </div>
       <h1>VORTEX LTC TRACKER</h1>
-      <p class="subtitle">Track Litecoin Like a Hacker in 2077</p>
+      <p class="subtitle">Neural-Linked Wallet Monitoring</p>
     </div>
 
+    <!-- Stats -->
     <div class="stats">
       <div class="stat-card">
-        <h3>Total Wallets</h3>
+        <h3>Wallets Monitored</h3>
         <div class="value" id="wallet-count">0</div>
       </div>
       <div class="stat-card">
-        <h3>Bot Status</h3>
-        <div class="value status-online pulse" id="bot-status">ONLINE</div>
+        <h3>System Status</h3>
+        <div class="value pulse" id="bot-status">ONLINE</div>
       </div>
     </div>
 
+    <!-- Wallets List -->
     <div class="wallets-section">
-      <h2>Monitored Wallets</h2>
+      <h2>Active Wallets</h2>
       <div id="wallets-list">
         <div class="empty-state">
-          No wallets being monitored yet.<br><br>
-          Use Discord bot: <code>/addwallet &lt;address&gt;</code>
+          No wallets detected in the matrix.<br><br>
+          Use Discord: <code>/addwallet &lt;address&gt;</code>
         </div>
       </div>
     </div>
 
     <p class="refresh-info">
-      <span>Auto-refreshing every 10 seconds</span>
+      <span>Auto-scanning every 10 seconds</span>
     </p>
   </div>
 
   <script>
-    async function fetchData() {
+    async function loadData() {
       try {
         const res = await fetch('/api/wallets');
         const data = await res.json();
 
         document.getElementById('wallet-count').textContent = data.count || 0;
 
-        const container = document.getElementById('wallets-list');
+        const list = document.getElementById('wallets-list');
         if (!data.wallets || data.wallets.length === 0) {
-          container.innerHTML = `<div class="empty-state">No wallets being monitored yet.<br><br>Use Discord bot: <code>/addwallet &lt;address&gt;</code></div>`;
+          list.innerHTML = `<div class="empty-state">No wallets in the network.<br><br>Use Discord: <code>/addwallet &lt;address&gt;</code></div>`;
         } else {
-          container.innerHTML = data.wallets.map(w => `
+          list.innerHTML = data.wallets.map(w => `
             <div class="wallet-item">
               <div class="wallet-address">${w.address}</div>
               <div class="wallet-balance">${w.balance.toFixed(8)} LTC</div>
@@ -133,12 +220,12 @@
         }
       } catch (err) {
         console.error(err);
-        document.getElementById('wallets-list').innerHTML = `<div class="empty-state">Error loading data</div>`;
+        document.getElementById('wallets-list').innerHTML = `<div class="empty-state">Connection lost to core.</div>`;
       }
     }
 
-    fetchData();
-    setInterval(fetchData, 10000);
+    loadData();
+    setInterval(loadData, 10000);
   </script>
 </body>
 </html>
