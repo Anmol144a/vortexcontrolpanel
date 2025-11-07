@@ -17,12 +17,12 @@ def handler(event, context):
         wallets = res.data or []
         total = sum(float(w.get("balance", 0)) for w in wallets)
 
-        # Fast LTC Price via Binance
+        # LTC Price via Binance
         try:
             price_res = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=LTCUSDT", timeout=3)
             price = float(price_res.json().get("price", 0)) if price_res.ok else 90.61
         except:
-            price = 90.61  # Fallback
+            price = 90.61
 
         return {
             "statusCode": 200,
@@ -33,7 +33,14 @@ def handler(event, context):
                 "Expires": "0"
             },
             "body": json.dumps({
-                "wallets": [{"address": w["address"], "balance": round(float(w.get("balance", 0)), 8)} for w in wallets],
+                "wallets": [
+                    {
+                        "address": w["address"],
+                        "balance": round(float(w.get("balance", 0)), 8),
+                        "tx_count": w.get("tx_count", 0),
+                        "explorer": f"https://blockchair.com/litecoin/address/{w['address']}"
+                    } for w in wallets
+                ],
                 "count": len(wallets),
                 "total_balance": round(total, 8),
                 "ltc_price": round(price, 2)
