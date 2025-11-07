@@ -1,21 +1,23 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/wallets.py", "use": "@vercel/python" },
-    { "src": "public/**", "use": "@vercel/static" }
-  ],
-  "rewrites": [
-    { "source": "/api/wallets", "destination": "/api/wallets.py" },
-    { "source": "/(.*)", "destination": "/public/index.html" }
-  ],
-  "headers": [
     {
-      "source": "/api/wallets",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Pragma", "value": "no-cache" },
-        { "key": "Expires", "value": "0" }
-      ]
+      "src": "api/wallets.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/wallets",
+      "dest": "/api/wallets.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/index.html"
     }
   ]
 }
