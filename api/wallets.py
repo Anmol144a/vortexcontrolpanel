@@ -17,16 +17,14 @@ def handler(event, context):
         }
 
     try:
-        # READ FROM 'wallets' TABLE
         res = supabase.table("wallets").select("*").execute()
         wallets = res.data or []
-
         total = sum(float(w.get("balance", 0)) for w in wallets)
 
-        # LTC Price
+        # FIXED: COINGECKO API (NO CORS, NO RATE LIMIT)
         try:
-            price_res = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=LTCUSDT", timeout=3)
-            price = float(price_res.json().get("price", 0)) if price_res.ok else 90.61
+            price_res = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=litecoin&vs_currencies=usd", timeout=5)
+            price = price_res.json().get("litecoin", {}).get("usd", 90.61) if price_res.ok else 90.61
         except:
             price = 90.61
 
