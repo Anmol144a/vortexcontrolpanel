@@ -10,14 +10,20 @@ supabase = create_client(url, key) if url and key else None
 
 def handler(event, context):
     if not supabase:
-        return {"statusCode": 500, "body": json.dumps({"error": "Supabase not configured"})}
+        return {
+            "statusCode": 500,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"error": "Supabase not configured"})
+        }
 
     try:
+        # READ FROM 'wallets' TABLE
         res = supabase.table("wallets").select("*").execute()
         wallets = res.data or []
+
         total = sum(float(w.get("balance", 0)) for w in wallets)
 
-        # LTC Price via Binance
+        # LTC Price
         try:
             price_res = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=LTCUSDT", timeout=3)
             price = float(price_res.json().get("price", 0)) if price_res.ok else 90.61
@@ -28,9 +34,7 @@ def handler(event, context):
             "statusCode": 200,
             "headers": {
                 "Content-Type": "application/json",
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-                "Pragma": "no-cache",
-                "Expires": "0"
+                "Cache-Control": "no-cache, no-store, must-revalidate"
             },
             "body": json.dumps({
                 "wallets": [
@@ -38,7 +42,7 @@ def handler(event, context):
                         "address": w["address"],
                         "balance": round(float(w.get("balance", 0)), 8),
                         "tx_count": w.get("tx_count", 0),
-                        "explorer": f"https://blockchair.com/litecoin/address/{w['address']}"
+                        "explorer": f"https://live.blockcypher.com/ltc/address/{w['address']}"
                     } for w in wallets
                 ],
                 "count": len(wallets),
@@ -48,4 +52,8 @@ def handler(event, context):
         }
     except Exception as e:
         print(f"API Error: {e}")
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+        return {
+            "statusCode": 500,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"error": str(e)})
+        }
