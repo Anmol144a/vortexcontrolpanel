@@ -3,42 +3,32 @@ import os
 import json
 from supabase import create_client
 
-# Load Supabase
+# Supabase (anon key)
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_KEY")
 
-if not url or not key:
-    def handler(event, context):
+supabase = create_client(url, key) if url and key else None
+
+def handler(event, context):
+    if not supabase:
         return {
             "statusCode": 500,
             "body": json.dumps({"error": "Supabase not configured"})
         }
-else:
-    supabase = create_client(url, key)
 
-def handler(event, context):
     try:
-        if not supabase:
-            raise Exception("Supabase client not initialized")
-
-        result = supabase.table('wallets').select('*').execute()
-        wallets = result.data
-
-        total_balance = sum(float(w.get('balance', 0)) for w in wallets)
+        result = supabase.table("wallets").select("*").execute()
+        wallets = result.data or []
 
         return {
             "statusCode": 200,
-            "headers": { "Content-Type": "application/json" },
+            "headers": {"Content-Type": "application/json"},
             "body": json.dumps({
                 "wallets": [
-                    {
-                        "address": w['address'],
-                        "balance": round(float(w['balance']), 8)
-                    }
+                    {"address": w["address"], "balance": round(float(w["balance"]), 8)}
                     for w in wallets
                 ],
-                "count": len(wallets),
-                "total_balance": round(total_balance, 8)
+                "count": len(wallets)
             })
         }
     except Exception as e:
